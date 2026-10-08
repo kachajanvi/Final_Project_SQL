@@ -1,0 +1,159 @@
+-- SQLBook: Code
+CREATE DATABASE UniversityDB;
+-- SQLBook: Code
+USE UniversityDB;
+
+-- SQLBook: Code
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(100)
+);
+-- SQLBook: Code
+INSERT INTO Departments VALUES
+(1,'Information Technology'),
+(2,'Civil Engineering');
+-- SQLBook: Code
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    BirthDate DATE,
+    EnrollmentDate DATE
+);
+-- SQLBook: Code
+INSERT INTO Students VALUES
+(1,'Janvi','Kacha','janvi@email.com','2000-01-15','2022-08-01'),
+(2,'Urvish','Vasani','Urvish@email.com','1999-05-25','2021-08-01'),
+(3,'Rahul','Patel','rahul@email.com','2001-03-10','2023-07-15'),
+(4,'Priya','Shah','priya@email.com','2000-11-20','2022-09-10');
+-- SQLBook: Code
+CREATE TABLE Courses (
+    CourseID INT PRIMARY KEY,
+    CourseName VARCHAR(100),
+    DepartmentID INT,
+    Credits INT,
+    FOREIGN KEY (DepartmentID)
+    REFERENCES Departments(DepartmentID)
+);
+
+-- SQLBook: Code
+INSERT INTO Courses VALUES
+(101,'Introduction to SQL',1,3),
+(102,'Data Structures',2,4),
+(103,'Python Programming',1,4);
+
+-- SQLBook: Code
+CREATE TABLE Instructors (
+    InstructorID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    DepartmentID INT,
+    Salary DECIMAL(10,2),
+    FOREIGN KEY (DepartmentID)
+    REFERENCES Departments(DepartmentID)
+);
+
+-- SQLBook: Code
+INSERT INTO Instructors VALUES
+(1,'Janvi','Kacha','janvi@univ.com',1,75000),
+(2,'Urvish','Vasani','urvish@univ.com',2,68000);
+-- SQLBook: Code
+CREATE TABLE Enrollments (
+    EnrollmentID INT PRIMARY KEY,
+    StudentID INT,
+    CourseID INT,
+    EnrollmentDate DATE,
+    FOREIGN KEY (StudentID)
+    REFERENCES Students(StudentID),
+    FOREIGN KEY (CourseID)
+    REFERENCES Courses(CourseID)
+);
+-- SQLBook: Code
+INSERT INTO Enrollments VALUES
+(1,1,101,'2022-08-01'),
+(2,2,102,'2021-08-01'),
+(3,3,101,'2023-07-15'),
+(4,4,103,'2022-09-10');
+-- SQLBook: Code
+SELECT * FROM Students;
+-- SQLBook: Code
+UPDATE Students
+SET Email='janvi.new@email.com'
+WHERE StudentID=1;
+
+-- SQLBook: Code
+DELETE FROM Enrollments
+WHERE StudentID=4;
+-- SQLBook: Code
+DELETE FROM Students
+WHERE StudentID=4;
+-- SQLBook: Code
+SELECT * FROM Students
+WHERE EnrollmentDate > '2022-12-31';
+-- SQLBook: Code
+SELECT c.CourseName
+FROM Courses c
+JOIN Departments d
+ON c.DepartmentID=d.DepartmentID
+WHERE d.DepartmentName='civil engineering'
+LIMIT 5;
+
+-- SQLBook: Code
+SELECT AVG(Credits) AS AverageCredits
+FROM Courses;
+
+-- SQLBook: Code
+SELECT MAX(Salary) AS MaximumSalary
+FROM Instructors;
+-- SQLBook: Code
+SELECT
+    s.FirstName,
+    s.LastName,
+    c.CourseName
+FROM Students s
+INNER JOIN Enrollments e
+ON s.StudentID=e.StudentID
+INNER JOIN Courses c
+ON e.CourseID=c.CourseID;
+
+-- SQLBook: Code
+SELECT
+    s.FirstName,
+    s.LastName,
+    c.CourseName
+FROM Students s
+LEFT JOIN Enrollments e
+ON s.StudentID=e.StudentID
+LEFT JOIN Courses c
+ON e.CourseID=c.CourseID;
+-- SQLBook: Code
+SELECT
+    CourseID,
+    COUNT(StudentID) AS TotalStudents
+FROM Enrollments
+GROUP BY CourseID;
+-- SQLBook: Code
+SELECT FirstName, LastName
+FROM Students
+WHERE StudentID IN (
+    SELECT StudentID
+    FROM Enrollments
+    WHERE CourseID IN (
+        SELECT CourseID
+        FROM Enrollments
+        GROUP BY CourseID
+        HAVING COUNT(StudentID) > 1
+    )
+);
+-- SQLBook: Code
+SELECT
+    FirstName,
+    LastName,
+    CASE
+        WHEN YEAR(CURDATE()) - YEAR(EnrollmentDate) > 4
+        THEN 'Senior'
+        ELSE 'Junior'
+    END AS StudentLevel
+FROM Students;
